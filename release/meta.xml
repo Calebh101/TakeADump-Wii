@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app version="1">
+    <name>TakeADump</name>
+    <coder>Calebh101</coder>
+    <version>1.0.0</version>
+    <release_date>20250920</release_date>
+    <short_description>Beta Wii disc ripping tool.</short_description> 
+    <long_description>
+        An alternative to CleanRip, just for me.
+
+        Features:
+            - Error persistence; will retry several times, then just give up and write 0s if the disc is unreadable.
+    </long_description> 
+    <ahb_access />
+</app>
