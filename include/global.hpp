@@ -47,6 +47,19 @@ public:
         }
     }
 
+    static void waitForButtonRelease() {
+        while (true) {
+            if (Global::get_controller_buttons_pressed() == 0) break;
+            VIDEO_WaitVSync();
+        }
+    }
+
+    static void resetAfterPause() {
+        Logger::print("Press A to exit.");
+        waitForA();
+        reset();
+    }
+
     static bool cancelOnError;
 };
 

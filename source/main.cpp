@@ -6,15 +6,16 @@
 #include "constants.hpp"
 #include <ogc/system.h>
 #include "global.hpp"
+#include "disk.hpp"
 
 bool stopOnError = true;
 
 void menu() {
-    Logger::print("1. Dump disc to FAT32 USB");
-    Logger::print("2. Dump disc to FAT32 SD card");
-    Logger::print("A. Toggle stop on error (currently: %s)", stopOnError ? "ON" : "OFF");
-    Logger::print("B. Exit");
-    Logger::print("-. Reprint menu");
+    Logger::print("1  Dump disc to FAT32 USB");
+    Logger::print("2  Dump disc to FAT32 SD card");
+    Logger::print("A  Toggle stop on error (currently: %s)", stopOnError ? "ON" : "OFF");
+    Logger::print("B  Exit");
+    Logger::print("-  Reprint menu");
 }
 
 int main(int argc, char **argv) {
@@ -30,6 +31,7 @@ int main(int argc, char **argv) {
     Logger::newline();
 
     Global::waitForA();
+    Global::waitForButtonRelease();
     menu();
     Logger::newline();
 
@@ -62,14 +64,20 @@ int main(int argc, char **argv) {
         }
 
         if (buttons != 0) {
-            while (Global::get_controller_buttons_pressed() != 0) {
-                // Wait until no buttons are pressed
-                usleep(1000);
-            }
+            Global::waitForButtonRelease();
         }
     }
 
     Logger::verbose("Selected drive of type %01d,%01d...", driveType, driveFs);
     Logger::print("Insert your %s now, and press A.", driveType == DRIVE_SD ? "SD card" : "USB drive");
     Global::waitForA();
+    Global::waitForButtonRelease();
+
+    Logger::print("Insert your %s now, and press A.", "game disc");
+    Global::waitForA();
+    Global::waitForButtonRelease();
+
+    int ret = DiskManager::initialize_disk();
+    Logger::verbose("Initialized disk with code %01d.", ret);
+    Global::resetAfterPause();
 }

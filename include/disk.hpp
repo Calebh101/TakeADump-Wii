@@ -23,7 +23,11 @@ u32 dvd_hard_init = 0;
 
 class DiskManager {
 public:
-    static int initialise_dvd() {
+    static volatile u32* get_dvd() {
+        return dvd;
+    }
+
+    static int initialize_disk() {
         Logger::print("Initializing DVD...");
         STACK_ALIGN(u8, id, 32, 32);
         u32 error;

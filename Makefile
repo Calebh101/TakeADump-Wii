@@ -20,7 +20,7 @@ LD      := $(CXX)
 
 # Compiler flags
 MACHDEP := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
-CFLAGS  := -O2 -Wall $(MACHDEP) -I$(SRC) -I$(INC)/libogc2 -I$(INC)/ppc-eabi
+CFLAGS  := -O2 -Wall $(MACHDEP) -I$(SRC) -I$(INC) -I$(INC)/libogc2 -I$(INC)/libogc2/ogc/machine
 CXXFLAGS:= $(CFLAGS)
 LDFLAGS := -O2 $(MACHDEP) -L$(LIB) -lwiiuse -lbte -logc -lfat -lm
 
