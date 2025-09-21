@@ -4,9 +4,12 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/opt/devkitpro/**"
+                "/opt/devkitpro/**",
+                "/opt/devkitpro/libogc2/include"
             ],
-            "defines": [],
+            "defines": [
+                "GEKKO"
+            ],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c17",
             "cppStandard": "c++17",
