@@ -3,9 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
-                "/opt/devkitpro/**",
-                "/opt/devkitpro/libogc2/include"
+                "${workspaceFolder}/include/**",
+                "${workspaceFolder}/source/**"
             ],
             "defines": [
                 "GEKKO"

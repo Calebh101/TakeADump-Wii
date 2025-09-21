@@ -9,6 +9,10 @@
 
 class Logger {
 public:
+    static void init() {
+        Logger::verbose("Logger initialized");
+    }
+
     static void newline() {
         printf("\n");
     }
@@ -16,6 +20,19 @@ public:
     static void print(const char* input, ...) {
         va_list args;
         va_start(args, input);
+        vprintf(input, args);
+        va_end(args);
+        putchar('\n');
+    }
+
+    static void verbose(const char* input, ...) {
+#ifndef DEBUG
+        return;
+#endif
+
+        va_list args;
+        va_start(args, input);
+        printf("VBS: ");
         vprintf(input, args);
         va_end(args);
         putchar('\n');

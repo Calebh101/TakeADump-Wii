@@ -11,7 +11,7 @@ bool stopOnError = true;
 
 void menu() {
     Logger::print("1. Dump disc to FAT32 USB");
-    //Logger::print("2. Dump disc to FAT32 SD card");
+    Logger::print("2. Dump disc to FAT32 SD card");
     Logger::print("A. Toggle stop on error (currently: %s)", stopOnError ? "ON" : "OFF");
     Logger::print("B. Exit");
     Logger::print("-. Reprint menu");
@@ -23,9 +23,13 @@ int main(int argc, char **argv) {
     SYS_SetResetCallback(Global::resetCallback);
 
     Logger::print("TakeADump %s by Calebh101", Constants::version.c_str());
-    Logger::print("Press Reset to exit.");
+    Logger::print("Please note: We are NOT responsible for any damage to your console, game discs, or external media.");
+    Logger::newline();
+    Logger::print("Press A to continue.");
+    Logger::print("Press Reset to exit any time.");
     Logger::newline();
 
+    Global::waitForA();
     menu();
     Logger::newline();
 
@@ -46,17 +50,26 @@ int main(int argc, char **argv) {
             driveType = DRIVE_USB;
             driveFs = FS_FAT32;
             break;
+        } else if (buttons & WPAD_BUTTON_2) {
+            Logger::print("Selected: FAT32 SD card");
+            driveType = DRIVE_SD;
+            driveFs = FS_FAT32;
+            break;
         } else if (buttons & WPAD_BUTTON_MINUS) {
             Logger::newline();
             menu();
             Logger::newline();
         }
 
-        while (Global::get_controller_buttons_pressed() != 0) {
-            // Wait until no buttons are pressed
-            usleep(1000);
+        if (buttons != 0) {
+            while (Global::get_controller_buttons_pressed() != 0) {
+                // Wait until no buttons are pressed
+                usleep(1000);
+            }
         }
     }
 
-    Logger::print("Selected drive of type %01d,%01d...", driveType, driveFs);
+    Logger::verbose("Selected drive of type %01d,%01d...", driveType, driveFs);
+    Logger::print("Insert your %s now, and press A.", driveType == DRIVE_SD ? "SD card" : "USB drive");
+    Global::waitForA();
 }

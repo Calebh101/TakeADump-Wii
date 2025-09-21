@@ -7,7 +7,7 @@
 #include <ogc/system.h>
 
 #define DRIVE_USB 0
-//#define DRIVE_SD 1
+#define DRIVE_SD 1
 #define FS_FAT32 0
 
 #ifndef GLOBAL_H
@@ -37,6 +37,14 @@ public:
     static void resetCallback() {
         Logger::newline();
         reset();
+    }
+
+    static void waitForA() {
+        while (true) {
+            u32 buttons = get_controller_buttons_pressed();
+            if (buttons & WPAD_BUTTON_A) break;
+            VIDEO_WaitVSync();
+        }
     }
 
     static bool cancelOnError;

@@ -7,7 +7,9 @@ $(error DEVKITPRO is not set. Please run in devkitPro environment)
 endif
 
 # Directories
-SRC     := src
+SRC     := source
+LIB     := lib
+INC     := include
 BUILD   := build
 TARGET  := $(notdir $(CURDIR))
 
@@ -18,13 +20,17 @@ LD      := $(CXX)
 
 # Compiler flags
 MACHDEP := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
-CFLAGS  := -O2 -Wall $(MACHDEP) -I$(DEVKITPRO)/libogc2/include -I$(DEVKITPRO)/libogc2/include/ogc -I$(SRC)
+CFLAGS  := -O2 -Wall $(MACHDEP) -I$(SRC) -I$(INC)/libogc2
 CXXFLAGS:= $(CFLAGS)
-LDFLAGS := -O2 $(MACHDEP) -L$(DEVKITPRO)/libogc2/lib/wii -lwiiuse -lbte -logc -lfat -lm
+LDFLAGS := -O2 $(MACHDEP) -L$(LIB) -lwiiuse -lbte -logc -lfat -lm
 
 # Find sources
 CPPFILES := $(wildcard $(SRC)/*.cpp)
 OBJECTS  := $(patsubst $(SRC)/%.cpp,$(BUILD)/%.o,$(CPPFILES))
+
+ifeq ($(DEBUG),1)
+    CXXFLAGS += -DDEBUG
+endif
 
 export PATH := $(PORTLIBS_PATH)/wii/bin:$(PORTLIBS_PATH)/ppc/bin:$(DEVKITPRO)/tools/bin:$(PATH)
 
