@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
             driveFs = FS_FAT32;
             break;
         } else if (buttons & WPAD_BUTTON_MINUS) {
+            Logger::newline();
             menu();
             Logger::newline();
         }

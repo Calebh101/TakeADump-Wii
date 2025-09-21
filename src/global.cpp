@@ -1,3 +1,3 @@
 #include "global.hpp"
 
-Global::cancelOnError = true;
+bool Global::cancelOnError = true;
