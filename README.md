@@ -8,4 +8,6 @@ Also, the name is pretty good in my opinion, and I like the banner too.
 
 # Building
 
-Heh, good luck. You think *I* know how this was built? I'll put the final result on GitHub Releases though.
+I've included the libraries I used in `include` and `lib`, so just make sure DevkitPro with DevkitPPC is installed and set in your environmental variables, and run `make` in the root directory. You can also run `make` with `DEBUG=1` for a debug build.
+
+`assemble.sh` just copies the previous build and the release assets to make `apps/TakeADump`.
