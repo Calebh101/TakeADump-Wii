@@ -9,6 +9,14 @@
 
 bool stopOnError = true;
 
+void menu() {
+    Logger::print("1. Dump disc to FAT32 USB");
+    //Logger::print("2. Dump disc to FAT32 SD card");
+    Logger::print("A. Toggle stop on error (currently: %s)", stopOnError ? "ON" : "OFF");
+    Logger::print("B. Exit");
+    Logger::print("-. Reprint menu");
+}
+
 int main(int argc, char **argv) {
     Graphics::init();
     WPAD_Init();
@@ -18,22 +26,36 @@ int main(int argc, char **argv) {
     Logger::print("Press Reset to exit.");
     Logger::newline();
 
-    Logger::print("1. Dump disc to FAT32 USB");
-    //Logger::print("2. Dump disc to FAT32 SD card");
-    Logger::print("A. Toggle stop on error (currently: %s)", stopOnError ? "ON" : "OFF");
-    Logger::print("B. Exit");
+    menu();
+    Logger::newline();
+
+    int driveType = -1;
+    int driveFs = -1;
 
     while (1) {
         u32 buttons = Global::get_controller_buttons_pressed();
         
         if (buttons & WPAD_BUTTON_A) {
             stopOnError = !stopOnError;
+            Global::setCancelOnError(stopOnError);
             Logger::print("A. Toggle stop on error (currently: %s)", stopOnError ? "ON" : "OFF");
         } else if (buttons & WPAD_BUTTON_B) {
             Global::reset();
         } else if (buttons & WPAD_BUTTON_1) {
-            Logger::newline();
             Logger::print("Selected: FAT32 USB drive");
+            driveType = DRIVE_USB;
+            driveFs = FS_FAT32;
+            break;
+        } else if (buttons & WPAD_BUTTON_MINUS) {
+            menu();
+            Logger::newline();
+        }
+
+        while (Global::get_controller_buttons_pressed() != 0) {
+            // Wait until no buttons are pressed
+            usleep(1000);
         }
     }
+
+    Logger::print("Selected drive of type %01d,%01d...", driveType, driveFs);
 }
