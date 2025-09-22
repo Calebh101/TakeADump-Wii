@@ -23,10 +23,18 @@ void menu() {
     Logger::print("-  Reprint menu");
 }
 
+void reset_callback(u32 a, void* b) {
+    Global::reset();
+}
+
+void reset_callback_2() {
+    Global::reset();
+}
+
 int main(int argc, char **argv) {
     Graphics::init();
     WPAD_Init();
-    SYS_SetResetCallback(Global::resetCallback);
+    SYS_SetResetCallback(reset_callback);
 
     Logger::print("TakeADump %s by Calebh101", Constants::version.c_str());
     Logger::print("Please note: We are NOT responsible for any damage to your console, game discs, or external media.");
@@ -79,7 +87,8 @@ int main(int argc, char **argv) {
     Global::waitForButtonRelease();
 
     int mountRet;
-    int fsRet = fatInitDefault();
+    int fsRet = true;
+    //fsRet = fatInitDefault();
 
     if (fsRet <= 0) {
         Logger::error(fsRet, "Unable to initialize FAT devices.");

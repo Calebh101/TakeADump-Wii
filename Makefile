@@ -1,7 +1,3 @@
-#-------------------------------
-# Minimal libogc2 Wii Makefile
-#-------------------------------
-
 ifndef DEVKITPRO
 $(error DEVKITPRO is not set. Please run in devkitPro environment)
 endif
@@ -12,6 +8,7 @@ LIB     := lib
 INC     := include
 BUILD   := build
 TARGET  := $(notdir $(CURDIR))
+LIBOGC 	:= libogc
 
 # Toolchain
 CC      := powerpc-eabi-gcc
@@ -20,9 +17,9 @@ LD      := $(CXX)
 
 # Compiler flags
 MACHDEP := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
-CFLAGS  := -O2 -Wall -w $(MACHDEP) -I$(SRC) -I$(INC) -I$(INC)/libogc2 -I$(INC)/libogc2/ogc/machine
+CFLAGS  := -O2 -Wall -w $(MACHDEP) -I$(SRC) -I$(INC)/takeadump -I$(INC)/$(LIBOGC) -I$(INC)/$(LIBOGC)/ogc/machine
 CXXFLAGS:= $(CFLAGS)
-LDFLAGS := -O2 $(MACHDEP) -L$(LIB) -lwiiuse -lbte -logc -lfat -lm
+LDFLAGS := -O2 $(MACHDEP) -L$(LIB)/$(LIBOGC) -lwiiuse -lbte -logc -lfat -lm
 
 # Find sources
 CPPFILES := $(wildcard $(SRC)/*.cpp)

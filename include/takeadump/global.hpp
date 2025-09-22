@@ -34,11 +34,6 @@ public:
         exit(code);
     }
 
-    static void resetCallback() {
-        Logger::newline();
-        reset();
-    }
-
     static void waitForA() {
         while (true) {
             u32 buttons = get_controller_buttons_pressed();
