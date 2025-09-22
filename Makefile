@@ -20,7 +20,7 @@ LD      := $(CXX)
 
 # Compiler flags
 MACHDEP := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
-CFLAGS  := -O2 -Wall $(MACHDEP) -I$(SRC) -I$(INC) -I$(INC)/libogc2 -I$(INC)/libogc2/ogc/machine
+CFLAGS  := -O2 -Wall -w $(MACHDEP) -I$(SRC) -I$(INC) -I$(INC)/libogc2 -I$(INC)/libogc2/ogc/machine
 CXXFLAGS:= $(CFLAGS)
 LDFLAGS := -O2 $(MACHDEP) -L$(LIB) -lwiiuse -lbte -logc -lfat -lm
 
@@ -30,6 +30,12 @@ OBJECTS  := $(patsubst $(SRC)/%.cpp,$(BUILD)/%.o,$(CPPFILES))
 
 ifeq ($(DEBUG),1)
     CXXFLAGS += -DDEBUG
+    $(info Debug mode is enabled)
+endif
+
+ifeq ($(EXCEPTIONS),1)
+    CXXFLAGS += -fexceptions
+    $(info Exceptions are enabled)
 endif
 
 export PATH := $(PORTLIBS_PATH)/wii/bin:$(PORTLIBS_PATH)/ppc/bin:$(DEVKITPRO)/tools/bin:$(PATH)

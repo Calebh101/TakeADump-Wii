@@ -88,16 +88,22 @@ int main(int argc, char **argv) {
     const DISC_INTERFACE* sdcard = &__io_wiisd;
     const DISC_INTERFACE* usb = &__io_usbstorage;
 
-    if (driveType == DRIVE_SD) {
-        Logger::verbose("Mounting DRIVE_SD now...");
-        usleep(500);
-        mountRet = fatMountSimple("target", sdcard);
-    } else if (driveType == DRIVE_USB) {
-        Logger::verbose("Mounting DRIVE_USB now...");
-        usleep(500);
-        mountRet = fatMountSimple("target", usb);
-    } else {
-        Logger::error(-1, "Invalid drive type: %01d", driveType);
+    try {
+        if (driveType == DRIVE_SD) {
+            Logger::verbose("Mounting DRIVE_SD now...");
+            usleep(500);
+            mountRet = fatMountSimple("target", sdcard);
+        } else if (driveType == DRIVE_USB) {
+            Logger::verbose("Mounting DRIVE_USB now...");
+            usleep(500);
+            mountRet = fatMountSimple("target", usb);
+        } else {
+            Logger::error(-1, "Invalid drive type: %01d", driveType);
+        }
+    } catch (const std::exception& e) {
+        Logger::error(1, "Unhandled FAT exception: %s", e.what());
+    } catch (...) {
+        Logger::error(2, "Unhandled FAT exception");
     }
 
     if (!mountRet) {
