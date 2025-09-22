@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
     Global::waitForButtonRelease();
 
     int mountRet;
-    int fsRet = 1;
+    int fsRet = fatInitDefault();
 
     if (fsRet <= 0) {
         Logger::error(fsRet, "Unable to initialize FAT devices.");
