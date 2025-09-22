@@ -6,6 +6,12 @@ It uses a TUI instead of a GUI so I could debug easier and also not spend weeks 
 
 Also, the name is pretty good in my opinion, and I like the banner too.
 
+# Requirements
+
+- Wii
+- Wii remote (no GameCube support)
+- SD card or USB drive
+
 # Building
 
 I've included the libraries I used in `include` and `lib`, so just make sure DevkitPro with DevkitPPC is installed and set in your environmental variables, and run `make` in the root directory. You can also run `make` with `DEBUG=1` for a debug build.

@@ -54,10 +54,12 @@ public:
         }
     }
 
-    static void resetAfterPause() {
+    static void resetAfterPause(int code = 0) {
         Logger::print("Press A to exit.");
+        waitForButtonRelease();
         waitForA();
-        reset();
+        waitForButtonRelease();
+        reset(0);
     }
 
     static bool cancelOnError;

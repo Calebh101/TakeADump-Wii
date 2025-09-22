@@ -32,7 +32,7 @@ public:
 
         va_list args;
         va_start(args, input);
-        printf("VBS: ");
+        printf("VERBOSE: ");
         vprintf(input, args);
         va_end(args);
         putchar('\n');
@@ -45,6 +45,8 @@ public:
     static void moveUp(int lines = 1) {
         for (int i = 0; i < lines; i++) printf("\x1b[1A");
     }
+
+    static void error(const int code, const char* input, ...);
 };
 
 #endif // LOGGER_H

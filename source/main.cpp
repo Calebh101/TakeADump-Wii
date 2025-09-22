@@ -7,6 +7,11 @@
 #include <ogc/system.h>
 #include "global.hpp"
 #include "disk.hpp"
+#include <fat.h>
+#include <sdcard/wiisd_io.h>
+#include <ogc/disc_io.h>
+#include <sdcard/gcsd.h>
+#include <ogc/usbstorage.h>
 
 bool stopOnError = true;
 
@@ -72,6 +77,32 @@ int main(int argc, char **argv) {
     Logger::print("Insert your %s now, and press A.", driveType == DRIVE_SD ? "SD card" : "USB drive");
     Global::waitForA();
     Global::waitForButtonRelease();
+
+    int mountRet;
+    int fsRet = 1;
+
+    if (fsRet <= 0) {
+        Logger::error(fsRet, "Unable to initialize FAT devices.");
+    }
+
+    const DISC_INTERFACE* sdcard = &__io_wiisd;
+    const DISC_INTERFACE* usb = &__io_usbstorage;
+
+    if (driveType == DRIVE_SD) {
+        Logger::verbose("Mounting DRIVE_SD now...");
+        usleep(500);
+        mountRet = fatMountSimple("target", sdcard);
+    } else if (driveType == DRIVE_USB) {
+        Logger::verbose("Mounting DRIVE_USB now...");
+        usleep(500);
+        mountRet = fatMountSimple("target", usb);
+    } else {
+        Logger::error(-1, "Invalid drive type: %01d", driveType);
+    }
+
+    if (!mountRet) {
+        Logger::error(mountRet, "Unable to mount drive.");
+    }
 
     Logger::print("Insert your %s now, and press A.", "game disc");
     Global::waitForA();
