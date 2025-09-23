@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/source/**",
                 "${workspaceFolder}/include/takeadump/**",
-                "${workspaceFolder}/include/libogc/**"
+                "${workspaceFolder}/include/libogc/**",
+                "${workspaceFolder}/include/libogc"
             ],
             "defines": [
                 "GEKKO"

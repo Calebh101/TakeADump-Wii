@@ -14,12 +14,15 @@
 #include <ogc/usbstorage.h>
 
 bool stopOnError = true;
+int driveFs = FS_FAT32;
+int driveType = -1;
 
 void menu() {
-    Logger::print("1  Dump disc to FAT32 USB");
-    Logger::print("2  Dump disc to FAT32 SD card");
+    Logger::print("1  Dump disc to %s USB", driveFs == FS_FAT32 ? "FAT32" : "NTFS");
+    Logger::print("2  Dump disc to %s SD card", driveFs == FS_FAT32 ? "FAT32" : "NTFS");
     Logger::print("A  Toggle stop on error (currently: %s)", stopOnError ? "ON" : "OFF");
-    Logger::print("B  Exit");
+    Logger::print("B  ");
+    Logger::print("+  Exit");
     Logger::print("-  Reprint menu");
 }
 
@@ -48,32 +51,38 @@ int main(int argc, char **argv) {
     menu();
     Logger::newline();
 
-    int driveType = -1;
-    int driveFs = -1;
-
     while (1) {
         u32 buttons = Global::get_controller_buttons_pressed();
         
         if (buttons & WPAD_BUTTON_A) {
             stopOnError = !stopOnError;
             Global::setCancelOnError(stopOnError);
-            Logger::print("A. Toggle stop on error (currently: %s)", stopOnError ? "ON" : "OFF");
-        } else if (buttons & WPAD_BUTTON_B) {
-            Global::reset();
-        } else if (buttons & WPAD_BUTTON_1) {
-            Logger::print("Selected: FAT32 USB drive");
-            driveType = DRIVE_USB;
-            driveFs = FS_FAT32;
-            break;
-        } else if (buttons & WPAD_BUTTON_2) {
-            Logger::print("Selected: FAT32 SD card");
-            driveType = DRIVE_SD;
-            driveFs = FS_FAT32;
-            break;
-        } else if (buttons & WPAD_BUTTON_MINUS) {
-            Logger::newline();
             menu();
             Logger::newline();
+        } else if (buttons & WPAD_BUTTON_B) {
+            if (driveFs == FS_FAT32) {
+                driveFs = FS_NTFS;
+            } else if (driveFs = FS_NTFS) {
+                driveFs = FS_FAT32;
+            } else {
+                driveFs = FS_FAT32;
+            }
+
+            menu();
+            Logger::newline();
+        } else if (buttons & WPAD_BUTTON_1) {
+            Logger::print("Selected USB drive");
+            driveType = DRIVE_USB;
+            break;
+        } else if (buttons & WPAD_BUTTON_2) {
+            Logger::print("Selected SD card");
+            driveType = DRIVE_SD;
+            break;
+        } else if (buttons & WPAD_BUTTON_MINUS) {
+            menu();
+            Logger::newline();
+        } else if (buttons & WPAD_BUTTON_PLUS) {
+            Global::reset();
         }
 
         if (buttons != 0) {
@@ -82,41 +91,48 @@ int main(int argc, char **argv) {
     }
 
     Logger::verbose("Selected drive of type %01d,%01d...", driveType, driveFs);
-    Logger::print("Insert your %s now, and press A.", driveType == DRIVE_SD ? "SD card" : "USB drive");
+    Logger::print("Insert your %s %s now, and press A.", driveFs == FS_FAT32 ? "FAT32" : "NTFS", driveType == DRIVE_SD ? "SD card" : "USB drive");
     Global::waitForA();
     Global::waitForButtonRelease();
 
-    int mountRet;
-    int fsRet = true;
-    //fsRet = fatInitDefault();
+    if (driveFs == FS_FAT32) {
+        Logger::verbose("Initializing FAT32...");
+        int mountRet;
+        int fsRet = true;
+        //fsRet = fatInitDefault();
 
-    if (fsRet <= 0) {
-        Logger::error(fsRet, "Unable to initialize FAT devices.");
-    }
-
-    const DISC_INTERFACE* sdcard = &__io_wiisd;
-    const DISC_INTERFACE* usb = &__io_usbstorage;
-
-    try {
-        if (driveType == DRIVE_SD) {
-            Logger::verbose("Mounting DRIVE_SD now...");
-            usleep(500);
-            mountRet = fatMountSimple("target", sdcard);
-        } else if (driveType == DRIVE_USB) {
-            Logger::verbose("Mounting DRIVE_USB now...");
-            usleep(500);
-            mountRet = fatMountSimple("target", usb);
-        } else {
-            Logger::error(-1, "Invalid drive type: %01d", driveType);
+        if (fsRet <= 0) {
+            Logger::error(fsRet, "Unable to initialize FAT devices.");
         }
-    } catch (const std::exception& e) {
-        Logger::error(1, "Unhandled FAT exception: %s", e.what());
-    } catch (...) {
-        Logger::error(2, "Unhandled FAT exception");
-    }
 
-    if (!mountRet) {
-        Logger::error(mountRet, "Unable to mount drive.");
+        const DISC_INTERFACE* sdcard = &__io_wiisd;
+        const DISC_INTERFACE* usb = &__io_usbstorage;
+
+        try {
+            if (driveType == DRIVE_SD) {
+                Logger::verbose("Mounting DRIVE_SD now...");
+                usleep(500);
+                mountRet = fatMountSimple("target", sdcard);
+            } else if (driveType == DRIVE_USB) {
+                Logger::verbose("Mounting DRIVE_USB now...");
+                usleep(500);
+                mountRet = fatMountSimple("target", usb);
+            } else {
+                Logger::error(-1, "Invalid drive type: %01d", driveType);
+            }
+        } catch (const std::exception& e) {
+            Logger::error(1, "Unhandled FAT exception: %s", e.what());
+        } catch (...) {
+            Logger::error(2, "Unhandled FAT exception");
+        }
+
+        if (!mountRet) {
+            Logger::error(mountRet, "Unable to mount drive.");
+        }
+    } else if (driveFs == FS_NTFS) {
+        Logger::verbose("Initializing NTFS...");
+    } else {
+        Logger::error(-1, "Invalid filesystem type: %01d", driveFs);
     }
 
     Logger::print("Insert your %s now, and press A.", "game disc");

@@ -8,7 +8,9 @@
 
 #define DRIVE_USB 0
 #define DRIVE_SD 1
+
 #define FS_FAT32 0
+#define FS_NTFS 1
 
 #ifndef GLOBAL_H
 #define GLOBAL_H
