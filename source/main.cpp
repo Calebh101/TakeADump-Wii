@@ -13,6 +13,8 @@
 #include <sdcard/gcsd.h>
 #include <ogc/usbstorage.h>
 
+#define NTFS_SUPPORT false
+
 int Global::driveFs = FS_FAT32;
 int Global::driveType = -1;
 
@@ -61,10 +63,14 @@ int main(int argc, char **argv) {
             menu();
             Logger::newline();
         } else if (buttons & WPAD_BUTTON_B) {
-            if (Global::driveFs == FS_FAT32) {
-                Global::driveFs = FS_NTFS;
-            } else if (Global::driveFs = FS_NTFS) {
-                Global::driveFs = FS_FAT32;
+            if (NTFS_SUPPORT == true) {
+                if (Global::driveFs == FS_FAT32) {
+                    Global::driveFs = FS_NTFS;
+                } else if (Global::driveFs == FS_NTFS) {
+                    Global::driveFs = FS_FAT32;
+                } else {
+                    Global::driveFs = FS_FAT32;
+                }
             } else {
                 Global::driveFs = FS_FAT32;
             }
@@ -96,7 +102,7 @@ int main(int argc, char **argv) {
 
     if (Global::driveFs == FS_FAT32) {
         Logger::verbose("Initializing FAT32...");
-        int mountRet;
+        int mountRet = -1;
         int fsRet = true;
         //fsRet = fatInitDefault();
 

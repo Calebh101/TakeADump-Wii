@@ -10,34 +10,36 @@ BUILD   := build
 TARGET  := $(notdir $(CURDIR))
 LIBOGC 	:= libogc
 
-# Toolchain
+export DEVKITPRO := $(BIN)
+export DEVKITPPC := $(DEVKITPRO)/devkitPPC
+export PATH := $(DEVKITPRO)/tools/bin:$(DEVKITPPC)/bin:$(PATH)
+#export PATH := /opt/devkitpro/tools/bin:/opt/devkitpro/devkitPPC/bin:$(PATH)
+
 CC      := powerpc-eabi-gcc
 CXX     := powerpc-eabi-g++
 LD      := $(CXX)
-export PATH := $(DEVKITPRO)/tools/bin:$(DEVKITPPC)/bin:$(PATH)
-# Compiler flags
+
 MACHDEP := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
 CFLAGS  := -O2 -Wall -w $(MACHDEP) -I$(SRC) -I$(SRC)/include -I$(INC)/$(LIBOGC) -I$(INC)/$(LIBOGC)/ogc/machine
 CXXFLAGS:= $(CFLAGS)
 LDFLAGS := -O2 $(MACHDEP) -L$(LIB)/$(LIBOGC) -lwiiuse -lbte -logc -lfat -lm
 
-# Find sources
 CPPFILES := $(wildcard $(SRC)/*.cpp)
 OBJECTS  := $(patsubst $(SRC)/%.cpp,$(BUILD)/%.o,$(CPPFILES))
 
-ifeq ($(DEBUG),1)
+ifeq ($(DEBUG), 1)
     CXXFLAGS += -DDEBUG
     $(info Debug mode is enabled)
 endif
 
-ifeq ($(EXCEPTIONS),1)
+ifeq ($(EXCEPTIONS), 1)
     CXXFLAGS += -fexceptions
     $(info Exceptions are enabled)
 endif
 
-export DEVKITPRO := $(BIN)
-export PATH := $(DEVKITPRO)/tools/bin:$(PATH)
-#export PATH := $(BIN):$(BIN)/libexec:$(PATH)
+ifeq ($(NTFS_SUPPORT), 1)
+	CXXFLAGS += -DNTFS_SUPPORT
+endif
 
 # Default target
 all: $(TARGET).dol
