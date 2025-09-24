@@ -10,7 +10,7 @@
 
 #define SECTOR_SIZE 0x800 // 2 kilobytes
 #define CHUNK_SIZE (2ULL*1024*1024*1024) // 2 gigabytes
-#define MAX_READ_SIZE 128 * 1024;
+#define MAX_READ_SIZE 128 * 1024
 
 u32 read_cmd = DVD_NORMAL;
 volatile u32* dvd = (volatile u32*)0xCC006000;
