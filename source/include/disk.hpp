@@ -17,17 +17,17 @@
 #define MINUTE 60000000 // From microsecond
 
 #define DVD_NO_HW_ACCESS -1000
-#define DVD_NO_DISC      -1001
+#define DVD_NO_DISK      -1001
 #define DVD_NORMAL 0xA8000000
 #define DVD_DVDR   0xD0000000
 
 #define WII_MAGIC 0x5D1C9EA3
 #define NGC_MAGIC 0xC2339F3D
 
-#define IS_NGC_DISC 0
-#define IS_WII_SINGLE_DISC 1
-#define IS_WII_DUAL_DISC 2
-#define IS_UNK_DISC 3
+#define IS_NGC_DISK 0
+#define IS_WII_SINGLE_DISK 1
+#define IS_WII_DUAL_DISK 2
+#define IS_UNK_DISK 3
 
 #ifndef DISK_MANAGER_H
 #define DISK_MANAGER_H
@@ -35,7 +35,7 @@
 typedef struct {
     char gameCode[4];     // 0x00
     char makerCode[2];    // 0x04
-    u8 discNumber;        // 0x06
+    u8 diskNumber;        // 0x06
     u8 gameVersion;       // 0x07
     u8 audioStreaming;    // 0x08
     u8 streamBufferSize;  // 0x09
@@ -49,13 +49,13 @@ typedef struct {
 
         oss << "GameCode: " << std::string(gameCode, 4)
             << delim << "Maker: " << std::string(makerCode, 2)
-            << delim << "Disc Number: " << static_cast<int>(discNumber)
+            << delim << "Disk Number: " << static_cast<int>(diskNumber)
             << delim << "Version: " << static_cast<int>(gameVersion)
             << delim << "Magic: 0x" << std::hex << std::setw(8) << std::setfill('0') << magicWord;
 
         return oss.str();
     }
-} DiscID;
+} DiskID;
 
 static union {
 	u32 inbuffer[0x10];
@@ -69,7 +69,7 @@ extern int dumpCounter;
 extern char gameName[32];
 extern char internalName[512];
 extern int di_fd;
-extern DiscID* globalDiskId;
+extern DiskID* globalDiskId;
 
 class DiskManager {
 public:
@@ -77,7 +77,7 @@ public:
         return dvd;
     }
 
-    static DiscID* get_disc_id() {
+    static DiskID* get_disk_id() {
         return globalDiskId;
     }
 
@@ -100,7 +100,7 @@ public:
         mask32(0x0D800194, 0, 0x400);
 
         error = dvd_get_error();
-        if ((error >> 24) == 1) return DVD_NO_DISC;
+        if ((error >> 24) == 1) return DVD_NO_DISK;
         int idRet = -1;
 
         if ((!dvd_hard_init) || (dvd_get_error())) {
@@ -129,9 +129,9 @@ public:
             usleep(1 * SECOND);
         }
 
-        DiscID* discId = read_dvd_id();
-        globalDiskId = discId;
-        if (discId == nullptr) return -1;
+        DiskID* diskId = read_dvd_id();
+        globalDiskId = diskId;
+        if (diskId == nullptr) return -1;
         return 0;
     }
 
@@ -155,37 +155,37 @@ public:
 
     static u64 get_disk_size_bytes(int disk_type) {
         switch(disk_type) {
-            case IS_NGC_DISC: return 0x58000000ULL;
-            case IS_WII_SINGLE_DISC: return 0x114000000ULL;
-            case IS_WII_DUAL_DISC: return 0x20AC00000ULL;
+            case IS_NGC_DISK: return 0x58000000ULL;
+            case IS_WII_SINGLE_DISK: return 0x114000000ULL;
+            case IS_WII_DUAL_DISK: return 0x20AC00000ULL;
             default: return 0;
         }
     }
 
-    static int identify_disc(DiscID* disc) {
-        if (disc->magicWord == NGC_MAGIC) {
-            Logger::verbose("Found GameCube disc");
-            return IS_NGC_DISC;
-        } else if (disc->magicWord == WII_MAGIC) {
-            Logger::verbose("Found Wii disc");
+    static int identify_disk(DiskID* disk) {
+        if (disk->magicWord == NGC_MAGIC) {
+            Logger::verbose("Found GameCube disk");
+            return IS_NGC_DISK;
+        } else if (disk->magicWord == WII_MAGIC) {
+            Logger::verbose("Found Wii disk");
             
             char buf2[2048] __attribute__((aligned(32)));
             int layer1_read = DVD_LowRead64(buf2, 2048, 0x16A00000ULL);
 
             if (layer1_read == 0) {
-                Logger::verbose("Wii disc is dual-layer");
-                return IS_WII_DUAL_DISC;
+                Logger::verbose("Wii disk is dual-layer");
+                return IS_WII_DUAL_DISK;
             } else {
-                Logger::verbose("Wii disc is single-layer");
-                return IS_WII_SINGLE_DISC;
+                Logger::verbose("Wii disk is single-layer");
+                return IS_WII_SINGLE_DISK;
             }
         } else {
-            Logger::verbose("Found unknown disc");
-            return IS_UNK_DISC;
+            Logger::verbose("Found unknown disk");
+            return IS_UNK_DISK;
         }
     }
 
-    static int dump(DiscID* diskId, int diskType, u64 diskSize);
+    static int dump(DiskID* diskId, int diskType, u64 diskSize);
 
 private:
     static u32 dvd_get_error(void) {
@@ -230,7 +230,7 @@ private:
         DCInvalidateRange(outbuf, 0x20);
 
         if (result < 0) return -result;
-        DiscID* d = (DiscID*)outbuf;
+        DiskID* d = (DiskID*)outbuf;
 
         if (d->magicWord == WII_MAGIC || d->magicWord == NGC_MAGIC) {
             return 0;
@@ -240,13 +240,13 @@ private:
         }
     }
 
-    static DiscID* read_dvd_id() {
+    static DiskID* read_dvd_id() {
         if (WDVD_LowReadDiskId() == 0) {
-            DiscID* source = (DiscID*)0x80000000;
-            DCInvalidateRange(source, sizeof(DiscID));
+            DiskID* source = (DiskID*)0x80000000;
+            DCInvalidateRange(source, sizeof(DiskID));
 
-            static DiscID localId ATTRIBUTE_ALIGN(32);
-            memcpy(&localId, source, sizeof(DiscID));
+            static DiskID localId ATTRIBUTE_ALIGN(32);
+            memcpy(&localId, source, sizeof(DiskID));
 
             std::string gameCode(localId.gameCode, 4);
             Logger::verbose("Found disk ID: %s", localId.toString().c_str());
@@ -261,7 +261,7 @@ private:
         char readbuf[2048] __attribute__((aligned(32)));
         int ret = DVD_LowRead64(readbuf, 2048, 0ULL);
         if (ret != 0) return ret;
-        memcpy(&dvdId, readbuf, sizeof(DiscID));
+        memcpy(&dvdId, readbuf, sizeof(DiskID));
         return 0;
     }*/
 };

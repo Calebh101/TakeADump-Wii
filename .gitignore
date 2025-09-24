@@ -1,5 +1,7 @@
 build
 apps
+TakeADump
 
 *.dol
 *.elf
+TakeADump.zip

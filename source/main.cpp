@@ -17,8 +17,8 @@ int Global::driveFs = FS_FAT32;
 int Global::driveType = -1;
 
 void menu() {
-    Logger::print("1  Dump disc to %s USB", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS");
-    Logger::print("2  Dump disc to %s SD card", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS");
+    Logger::print("1  Dump disk to %s USB", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS");
+    Logger::print("2  Dump disk to %s SD card", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS");
     Logger::print("A  Toggle stop on read error (currently: %s)", Global::cancelOnError ? "ON" : "OFF");
     Logger::print("B  Change filesystem (currently: %s)", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS");
     Logger::print("+  Exit");
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     SYS_SetResetCallback(reset_callback);
 
     Logger::print("TakeADump %s by Calebh101", Constants::version.c_str());
-    Logger::print("Please note: We are NOT responsible for any damage to your console, game discs, or external media.");
+    Logger::print("Please note: We are NOT responsible for any damage to your console, game disks, or external media.");
     Logger::newline();
     Logger::print("Press A to continue.");
     Logger::print("Press Reset to exit any time.");
@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
         Logger::error(-1, "Invalid filesystem type: %01d", Global::driveFs);
     }
 
-    Logger::print("Insert your %s now, and press A.", "game disc");
+    Logger::print("Insert your %s now, and press A.", "game disk");
     Global::waitForA();
     Global::waitForButtonRelease();
 
@@ -146,10 +146,10 @@ int main(int argc, char **argv) {
         Logger::error(initRet, "Unable to initialize disk.");
     }
 
-    DiscID* disk = DiskManager::get_disc_id();
-    int type = DiskManager::identify_disc(disk);
+    DiskID* disk = DiskManager::get_disk_id();
+    int type = DiskManager::identify_disk(disk);
     Logger::verbose("Found disk type of %d", type);
-    if (type == IS_UNK_DISC) Logger::error(-1, "Disk is unknown.");
+    if (type == IS_UNK_DISK) Logger::error(-1, "Disk is unknown.");
     u64 size = DiskManager::get_disk_size_bytes(type);
     Logger::verbose("Found disk size of %u bytes (%.2f MB)", size, size / 1024.0f / 1024.0f);
 

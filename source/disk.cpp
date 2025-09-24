@@ -19,9 +19,9 @@ int dumpCounter = 0;
 char gameName[32] = {0};
 char internalName[512] = {0};
 int di_fd = -1;
-DiscID* globalDiskId = nullptr;
+DiskID* globalDiskId = nullptr;
 
-int DiskManager::dump(DiscID* diskId, int diskType, u64 diskSize) {
+int DiskManager::dump(DiskID* diskId, int diskType, u64 diskSize) {
     void* buffer = memalign(32, SECTOR_SIZE);
 
     if (!buffer) {
@@ -60,38 +60,26 @@ int DiskManager::dump(DiscID* diskId, int diskType, u64 diskSize) {
         }
 
         u32 read_size = (remaining > SECTOR_SIZE) ? SECTOR_SIZE : (u32)remaining;
-        u64 cur_offset = offset;
-        u32 to_read = read_size;
+        int ret = DVD_LowRead64(buffer, read_size, offset);
 
-        while (to_read > 0) {
-            u32 block = (to_read > 0x7FFFFFFF) ? 0x7FFFFFFF : to_read;
-            int ret = DVD_LowRead64(buffer, block, (u32)(cur_offset & 0xFFFFFFFF));
-
-            if (ret != 0) {
-                Logger::print("Error reading disk at offset 0x%08llX.", cur_offset);
-                
-                if (Global::cancelOnError) {
-                    fclose(fp);
-                    free(buffer);
-                    return -1;
-                }
-            }
-            
-            cur_offset += block;
-            to_read -= block;
+        if (ret != 0) {
+            Logger::print("Error reading disk at offset 0x%08llX, filling with 0s.", offset);
+            memset(buffer, 0, read_size);
         }
 
-        size_t written = fwrite(buffer, 1, SECTOR_SIZE, fp);
+        size_t written = fwrite(buffer, 1, read_size, fp);
 
-        if (written != SECTOR_SIZE) {
-            Logger::print("Error writing file. Bytes written: %d. Bytes expected: %d.", written, SECTOR_SIZE);
+        if (written != read_size) {
+            Logger::print("Error writing file. Bytes written: %d. Bytes expected: %d.", written, read_size);
             fclose(fp);
             free(buffer);
             return -2;
         }
 
-        offset += SECTOR_SIZE;
-        chunk_offset += SECTOR_SIZE;
+        offset += read_size;
+        chunk_offset += read_size;
+        remaining -= read_size;
+
         Logger::print("Dumped %.2f MB / %.2f MB (%d%%)", offset / 1024.0 / 1024.0, diskSize / 1024.0 / 1024.0, static_cast<int>(round(((double)offset / (double)diskSize) * 100)));
     }
 

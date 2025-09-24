@@ -1,7 +1,8 @@
 #!/bin/bash
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTPUT_DIR="$ROOT_DIR/apps/TakeADump"
+ROOT_OUTPUT_DIR="$ROOT_DIR/TakeADump"
+OUTPUT_DIR="$ROOT_OUTPUT_DIR/apps/TakeADump"
 
 if [ ! -e "$ROOT_DIR/TakeADump.dol" ]; then
     echo "Please run the Makefile in the root directory."
@@ -16,6 +17,7 @@ echo "Copying files..."
 if [ -e "$ROOT_DIR/release/icon.png" ]; then cp "$ROOT_DIR/release/icon.png" "$OUTPUT_DIR/icon.png"; fi
 cp "$ROOT_DIR/release/meta.xml" "$OUTPUT_DIR/meta.xml"
 cp "$ROOT_DIR/TakeADump.dol" "$OUTPUT_DIR/boot.dol"
+cp "$ROOT_DIR/README.md" "$ROOT_OUTPUT_DIR/README.md"
 
 echo "Process complete!"
 exit 0
