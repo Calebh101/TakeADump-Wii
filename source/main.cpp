@@ -72,11 +72,9 @@ int main(int argc, char **argv) {
             menu();
             Logger::newline();
         } else if (buttons & WPAD_BUTTON_1) {
-            Logger::print("Selected USB drive");
             Global::driveType = DRIVE_USB;
             break;
         } else if (buttons & WPAD_BUTTON_2) {
-            Logger::print("Selected SD card");
             Global::driveType = DRIVE_SD;
             break;
         } else if (buttons & WPAD_BUTTON_MINUS) {
@@ -141,7 +139,30 @@ int main(int argc, char **argv) {
     Global::waitForA();
     Global::waitForButtonRelease();
 
-    int ret = DiskManager::initialize_disk();
-    Logger::verbose("Initialized disk with code %01d.", ret);
-    Global::resetAfterPause();
+    int initRet = DiskManager::initialize_disk();
+    Logger::verbose("Initialized disk with code %01d.", initRet);
+
+    if (initRet != 0) {
+        Logger::error(initRet, "Unable to initialize disk.");
+    }
+
+    DiscID* disk = DiskManager::get_disc_id();
+    int type = DiskManager::identify_disc(disk);
+    Logger::verbose("Found disk type of %d", type);
+    if (type == IS_UNK_DISC) Logger::error(-1, "Disk is unknown.");
+    u64 size = DiskManager::get_disk_size_bytes(type);
+    Logger::verbose("Found disk size of %u bytes (%.2f MB)", size, size / 1024.0f / 1024.0f);
+
+    Logger::print("Press A to start dumping.");
+    Logger::print("Press Reset to exit.");
+    Global::waitForA();
+    Global::waitForButtonRelease();
+    int dumpRet = DiskManager::dump(disk, type, size);
+
+    if (dumpRet != 0) {
+        Logger::error(dumpRet, "Dump failed.");
+    } else {
+        Logger::verbose("Dump complete.");
+        Global::resetAfterPause();
+    }
 }

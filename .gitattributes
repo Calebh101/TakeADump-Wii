@@ -1,0 +1,6 @@
+include/** linguist-generated
+lib/** linguist-generated
+
+*.a binary
+
+* text=auto

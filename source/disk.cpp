@@ -6,9 +6,11 @@
 #include <gccore.h>
 #include "global.hpp"
 #include <chrono>
+#include <cmath>
 
 #define SECTOR_SIZE 0x800 // 2 kilobytes
 #define CHUNK_SIZE (2ULL*1024*1024*1024) // 2 gigabytes
+#define MAX_READ 2ULL*1024*1024*1024;
 
 u32 read_cmd = DVD_NORMAL;
 volatile u32* dvd = (volatile u32*)0xCC006000;
@@ -19,7 +21,7 @@ char internalName[512] = {0};
 int di_fd = -1;
 DiscID* globalDiskId = nullptr;
 
-int DiskManager::dump(DiscID* diskId, u32 diskSize) {
+int DiskManager::dump(DiscID* diskId, int diskType, u64 diskSize) {
     void* buffer = memalign(32, SECTOR_SIZE);
 
     if (!buffer) {
@@ -37,6 +39,8 @@ int DiskManager::dump(DiscID* diskId, u32 diskSize) {
     auto start = std::chrono::high_resolution_clock::now();
 
     while (offset < diskSize) {
+        Logger::moveUp();
+
         if (!fp || chunk_offset >= CHUNK_SIZE) {
             if (fp) fclose(fp);
             char filename[256];
@@ -44,19 +48,23 @@ int DiskManager::dump(DiscID* diskId, u32 diskSize) {
             fp = fopen(filename, "wb");
 
             if (!fp) {
-                printf("Failed to create file: %s\n", filename);
+                Logger::newline();
+                Logger::print("Failed to create file: %s", filename);
                 free(buffer);
                 return -2;
             }
 
+            Logger::verbose("New chunk created at file: %s", filename);
             chunk_offset = 0;
         }
 
-        Logger::moveUp();
-        int ret = DVD_LowRead64(buffer, SECTOR_SIZE, (u64)offset);
+        u32 read_size = SECTOR_SIZE;
+        if ((chunk_offset + read_size) > CHUNK_SIZE) read_size = (u32)(CHUNK_SIZE - chunk_offset);
+        if ((offset + read_size) > diskSize) read_size = (u32)(diskSize - offset);
+        int ret = DVD_LowRead64(buffer, read_size, (u32)(offset & 0xFFFFFFFF));
 
         if (ret != 0) {
-            Logger::print("Error reading disc at offset 0x%08llX\n", offset);
+            Logger::print("Error reading disk at offset 0x%08llX.", offset);
 
             if (Global::cancelOnError) {
                 fclose(fp);
@@ -76,8 +84,7 @@ int DiskManager::dump(DiscID* diskId, u32 diskSize) {
 
         offset += SECTOR_SIZE;
         chunk_offset += SECTOR_SIZE;
-        
-        Logger::print("Dumped %.2f MB / %.2f MB", offset / 1024.0f / 1024.0f, diskSize / 1024.0f / 1024.0f);
+        Logger::print("Dumped %.2f MB / %.2f MB (%d%%)", offset / 1024.0 / 1024.0, diskSize / 1024.0 / 1024.0, static_cast<int>(round(((double)offset / (double)diskSize) * 100)));
     }
 
     auto end = std::chrono::high_resolution_clock::now();
