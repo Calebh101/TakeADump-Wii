@@ -122,9 +122,8 @@ public:
             usleep(1 * SECOND);
         }
 
-        DiscID* discId = (DiscID*)0x80000000;
-        std::string gameCode = std::string(discId->gameCode, 4);
-        Logger::verbose("Found disc ID of %s: (%s)", gameName, discId->toString());
+        DiscID* discId = read_dvd_id();
+        if (discId == nullptr) return -1;
         return 0;
     }
 
@@ -188,7 +187,7 @@ private:
         return dvd[8];
     }
 
-    static int WDVD_LowReadDiskId() {
+    /*static int WDVD_LowReadDiskId() {
         int result;
         void* outbuf = (void*)0x80000000;
 
@@ -198,6 +197,62 @@ private:
 
         result = IOS_Ioctl(di_fd, 0x70, inbuffer, 0x20, outbuf, 0x20);
         return (result == 1) ? 0 : -result;
+    }*/
+
+    static int WDVD_LowReadDiskId() {
+        int result;
+
+        // Ensure DI is open
+        if (di_fd < 0) {
+            di_fd = IOS_Open("/dev/di", 0);
+            Logger::verbose("IOS_Open(\"/dev/di\") -> %d", di_fd);
+            if (di_fd < 0) {
+                return -1; // can't open DI
+            }
+        }
+
+        // outbuf in MEM1 (must be 32-byte aligned)
+        void* outbuf = (void*)0x80000000;
+        memset(outbuf, 0, 0x20);        // clear before call (OK)
+        inbuffer[0] = 0x70000000;       // DI command for read disk id
+        inbuffer[1] = 0;                // zero the rest if you want
+        // ... you can zero more fields if you like
+
+        result = IOS_Ioctl(di_fd, 0x70, inbuffer, 0x20, outbuf, 0x20);
+        Logger::verbose("IOS_Ioctl(di_fd,0x70) -> %d", result);
+
+        // IOS writes directly to physical memory — invalidate cache to see it
+        DCInvalidateRange(outbuf, 0x20);
+
+        // Be conservative about success codes: treat >= 0 as success of the syscall,
+        // then validate the data (magic word) as final confirmation.
+        if (result < 0) {
+            return -result;
+        }
+
+        // Validate the magic word at the expected offset (0x18 for your DiscID)
+        DiscID* d = (DiscID*)outbuf;
+        if (d->magicWord == WII_MAGIC || d->magicWord == NGC_MAGIC) {
+            return 0; // success
+        } else {
+            Logger::verbose("WDVD_LowReadDiskId: invalid magic 0x%08X", d->magicWord);
+            return -2; // bogus data read
+        }
+    }
+
+    static DiscID* read_dvd_id() {
+        if (WDVD_LowReadDiskId() == 0) {
+            DCInvalidateRange((void*)0x80000000, sizeof(DiscID));
+            DiscID localId;
+            memcpy(&localId, (void*)0x80000000, sizeof(DiscID));
+
+            std::string gameCode(localId.gameCode, 4);
+            Logger::verbose("Found disc ID: %s", localId.toString().c_str());
+            return &localId;
+        } else {
+            Logger::verbose("Failed to read Disc ID");
+            return nullptr;
+        }
     }
 
     /*static int dvd_read_id() {
