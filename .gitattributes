@@ -1,5 +1,6 @@
 include/** linguist-generated
 lib/** linguist-generated
+bin/** linguist-generated
 
 *.a binary
 

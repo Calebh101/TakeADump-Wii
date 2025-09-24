@@ -17,3 +17,8 @@ Also, the name is pretty good in my opinion, and I like the banner too.
 I've included all the necessary libraries and building tools, so just run `make` with optional parameters to compile the binary.
 
 `assemble.sh` just copies the previous build and the release assets to make `apps/TakeADump`.
+
+## Arguments to Makefile
+
+- `DEBUG=1`: Build a debug binary. This provides extra logs and stuff.
+- `EXCEPTIONS=1`: Unneeded argument, but it allows compiling exceptions into the runtime.

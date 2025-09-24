@@ -10,7 +10,7 @@
 
 #define SECTOR_SIZE 0x800 // 2 kilobytes
 #define CHUNK_SIZE (2ULL*1024*1024*1024) // 2 gigabytes
-#define MAX_READ 2ULL*1024*1024*1024;
+#define MAX_READ_SIZE 128 * 1024;
 
 u32 read_cmd = DVD_NORMAL;
 volatile u32* dvd = (volatile u32*)0xCC006000;
@@ -31,14 +31,15 @@ int DiskManager::dump(DiscID* diskId, int diskType, u64 diskSize) {
 
     FILE* fp = nullptr;
     u64 offset = 0;
-    int chunk_index = 0;
+    int chunk_index = 1;
     u64 chunk_offset = 0;
+    u64 remaining = diskSize;
 
     Logger::print("Taking a dump...");
-    Logger::print("Dumping will start shortly.");
+    Logger::print("Dumped 0 bytes");
     auto start = std::chrono::high_resolution_clock::now();
 
-    while (offset < diskSize) {
+    while (remaining > 0) {
         Logger::moveUp();
 
         if (!fp || chunk_offset >= CHUNK_SIZE) {
@@ -58,19 +59,26 @@ int DiskManager::dump(DiscID* diskId, int diskType, u64 diskSize) {
             chunk_offset = 0;
         }
 
-        u32 read_size = SECTOR_SIZE;
-        if ((chunk_offset + read_size) > CHUNK_SIZE) read_size = (u32)(CHUNK_SIZE - chunk_offset);
-        if ((offset + read_size) > diskSize) read_size = (u32)(diskSize - offset);
-        int ret = DVD_LowRead64(buffer, read_size, (u32)(offset & 0xFFFFFFFF));
+        u32 read_size = (remaining > SECTOR_SIZE) ? SECTOR_SIZE : (u32)remaining;
+        u64 cur_offset = offset;
+        u32 to_read = read_size;
 
-        if (ret != 0) {
-            Logger::print("Error reading disk at offset 0x%08llX.", offset);
+        while (to_read > 0) {
+            u32 block = (to_read > 0x7FFFFFFF) ? 0x7FFFFFFF : to_read;
+            int ret = DVD_LowRead64(buffer, block, (u32)(cur_offset & 0xFFFFFFFF));
 
-            if (Global::cancelOnError) {
-                fclose(fp);
-                free(buffer);
-                return -1;
+            if (ret != 0) {
+                Logger::print("Error reading disk at offset 0x%08llX.", cur_offset);
+                
+                if (Global::cancelOnError) {
+                    fclose(fp);
+                    free(buffer);
+                    return -1;
+                }
             }
+            
+            cur_offset += block;
+            to_read -= block;
         }
 
         size_t written = fwrite(buffer, 1, SECTOR_SIZE, fp);
