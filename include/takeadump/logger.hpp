@@ -24,19 +24,6 @@ public:
         va_end(args);
         putchar('\n');
     }
-
-    static void verbose(const char* input, ...) {
-#ifndef DEBUG
-        return;
-#endif
-
-        va_list args;
-        va_start(args, input);
-        printf("VERBOSE: ");
-        vprintf(input, args);
-        va_end(args);
-        putchar('\n');
-    }
     
     static void clear() {
         for(int i = 0; i < 30; i++) newline();
@@ -47,6 +34,7 @@ public:
     }
 
     static void error(const int code, const char* input, ...);
+    static void verbose(const char* input, ...);
 };
 
 #endif // LOGGER_H

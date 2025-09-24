@@ -14,23 +14,25 @@
 #include <ogc/usbstorage.h>
 
 bool stopOnError = true;
-int driveFs = FS_FAT32;
-int driveType = -1;
+int Global::driveFs = FS_FAT32;
+int Global::driveType = -1;
 
 void menu() {
-    Logger::print("1  Dump disc to %s USB", driveFs == FS_FAT32 ? "FAT32" : "NTFS");
-    Logger::print("2  Dump disc to %s SD card", driveFs == FS_FAT32 ? "FAT32" : "NTFS");
+    Logger::print("1  Dump disc to %s USB", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS");
+    Logger::print("2  Dump disc to %s SD card", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS");
     Logger::print("A  Toggle stop on error (currently: %s)", stopOnError ? "ON" : "OFF");
-    Logger::print("B  ");
+    Logger::print("B  Change filesystem (currently: %s)", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS");
     Logger::print("+  Exit");
     Logger::print("-  Reprint menu");
 }
 
 void reset_callback(u32 a, void* b) {
+    Logger::verbose("Received reset callback of type 1");
     Global::reset();
 }
 
 void reset_callback_2() {
+    Logger::verbose("Received reset callback of type 2");
     Global::reset();
 }
 
@@ -60,23 +62,23 @@ int main(int argc, char **argv) {
             menu();
             Logger::newline();
         } else if (buttons & WPAD_BUTTON_B) {
-            if (driveFs == FS_FAT32) {
-                driveFs = FS_NTFS;
-            } else if (driveFs = FS_NTFS) {
-                driveFs = FS_FAT32;
+            if (Global::driveFs == FS_FAT32) {
+                Global::driveFs = FS_NTFS;
+            } else if (Global::driveFs = FS_NTFS) {
+                Global::driveFs = FS_FAT32;
             } else {
-                driveFs = FS_FAT32;
+                Global::driveFs = FS_FAT32;
             }
 
             menu();
             Logger::newline();
         } else if (buttons & WPAD_BUTTON_1) {
             Logger::print("Selected USB drive");
-            driveType = DRIVE_USB;
+            Global::driveType = DRIVE_USB;
             break;
         } else if (buttons & WPAD_BUTTON_2) {
             Logger::print("Selected SD card");
-            driveType = DRIVE_SD;
+            Global::driveType = DRIVE_SD;
             break;
         } else if (buttons & WPAD_BUTTON_MINUS) {
             menu();
@@ -90,12 +92,12 @@ int main(int argc, char **argv) {
         }
     }
 
-    Logger::verbose("Selected drive of type %01d,%01d...", driveType, driveFs);
-    Logger::print("Insert your %s %s now, and press A.", driveFs == FS_FAT32 ? "FAT32" : "NTFS", driveType == DRIVE_SD ? "SD card" : "USB drive");
+    Logger::verbose("Selected drive of type %01d,%01d...", Global::driveType, Global::driveFs);
+    Logger::print("Insert your %s %s now, and press A.", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS", Global::driveType == DRIVE_SD ? "SD card" : "USB drive");
     Global::waitForA();
     Global::waitForButtonRelease();
 
-    if (driveFs == FS_FAT32) {
+    if (Global::driveFs == FS_FAT32) {
         Logger::verbose("Initializing FAT32...");
         int mountRet;
         int fsRet = true;
@@ -109,16 +111,16 @@ int main(int argc, char **argv) {
         const DISC_INTERFACE* usb = &__io_usbstorage;
 
         try {
-            if (driveType == DRIVE_SD) {
+            if (Global::driveType == DRIVE_SD) {
                 Logger::verbose("Mounting DRIVE_SD now...");
                 usleep(500);
                 mountRet = fatMountSimple("target", sdcard);
-            } else if (driveType == DRIVE_USB) {
+            } else if (Global::driveType == DRIVE_USB) {
                 Logger::verbose("Mounting DRIVE_USB now...");
                 usleep(500);
                 mountRet = fatMountSimple("target", usb);
             } else {
-                Logger::error(-1, "Invalid drive type: %01d", driveType);
+                Logger::error(-1, "Invalid drive type: %01d", Global::driveType);
             }
         } catch (const std::exception& e) {
             Logger::error(1, "Unhandled FAT exception: %s", e.what());
@@ -129,10 +131,11 @@ int main(int argc, char **argv) {
         if (!mountRet) {
             Logger::error(mountRet, "Unable to mount drive.");
         }
-    } else if (driveFs == FS_NTFS) {
+    } else if (Global::driveFs == FS_NTFS) {
         Logger::verbose("Initializing NTFS...");
+        Logger::error(-1, "NTFS is currently unsupported. Sorry for the inconvenience. (Feel free to make a pull request!)");
     } else {
-        Logger::error(-1, "Invalid filesystem type: %01d", driveFs);
+        Logger::error(-1, "Invalid filesystem type: %01d", Global::driveFs);
     }
 
     Logger::print("Insert your %s now, and press A.", "game disc");

@@ -1,5 +1,9 @@
 ifndef DEVKITPRO
-$(error DEVKITPRO is not set. Please run in devkitPro environment)
+$(error DEVKITPRO is not set. Please run in a devkitPro environment.)
+endif
+
+ifndef DEVKITPPC
+$(error DEVKITPPC is not set. Please run in a devkitPro environment.)
 endif
 
 # Directories
@@ -24,6 +28,7 @@ LDFLAGS := -O2 $(MACHDEP) -L$(LIB)/$(LIBOGC) -lwiiuse -lbte -logc -lfat -lm
 # Find sources
 CPPFILES := $(wildcard $(SRC)/*.cpp)
 OBJECTS  := $(patsubst $(SRC)/%.cpp,$(BUILD)/%.o,$(CPPFILES))
+PORTLIBS_PATH := $(DEVKITPRO)/portlibs
 
 ifeq ($(DEBUG),1)
     CXXFLAGS += -DDEBUG
@@ -35,7 +40,7 @@ ifeq ($(EXCEPTIONS),1)
     $(info Exceptions are enabled)
 endif
 
-export PATH := $(PORTLIBS_PATH)/wii/bin:$(PORTLIBS_PATH)/ppc/bin:$(DEVKITPRO)/tools/bin:$(PATH)
+export PATH := $(PORTLIBS_PATH)/wii/bin:$(PORTLIBS_PATH)/ppc/bin:$(DEVKITPRO)/tools/bin:$(DEVKITPPC)/bin:$(PATH)
 
 # Default target
 all: $(TARGET).dol

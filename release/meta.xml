@@ -6,10 +6,7 @@
     <release_date>20250920</release_date>
     <short_description>Beta Wii disc ripping tool.</short_description> 
     <long_description>
-        An alternative to CleanRip, just for me.
-
-        Features:
-            - Error persistence; will retry several times, then just give up and write 0s if the disc is unreadable.
+An alternative to CleanRip, with less features and a buggy mess.
     </long_description> 
     <ahb_access />
 </app>

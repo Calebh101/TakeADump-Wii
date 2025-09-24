@@ -60,6 +60,8 @@ public:
     }
 
     static bool cancelOnError;
+    static int driveType;
+    static int driveFs;
 };
 
 #endif // GLOBAL_H
