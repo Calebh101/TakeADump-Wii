@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/source/**",
-                "${workspaceFolder}/include/takeadump/**",
+                "${workspaceFolder}/source/include/**",
                 "${workspaceFolder}/include/libogc/**",
                 "${workspaceFolder}/include/libogc"
             ],

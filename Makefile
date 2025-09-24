@@ -21,7 +21,7 @@ LD      := $(CXX)
 
 # Compiler flags
 MACHDEP := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
-CFLAGS  := -O2 -Wall -w $(MACHDEP) -I$(SRC) -I$(INC)/takeadump -I$(INC)/$(LIBOGC) -I$(INC)/$(LIBOGC)/ogc/machine
+CFLAGS  := -O2 -Wall -w $(MACHDEP) -I$(SRC) -I$(SRC)/include -I$(INC)/$(LIBOGC) -I$(INC)/$(LIBOGC)/ogc/machine
 CXXFLAGS:= $(CFLAGS)
 LDFLAGS := -O2 $(MACHDEP) -L$(LIB)/$(LIBOGC) -lwiiuse -lbte -logc -lfat -lm
 
