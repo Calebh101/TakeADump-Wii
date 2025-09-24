@@ -13,14 +13,13 @@
 #include <sdcard/gcsd.h>
 #include <ogc/usbstorage.h>
 
-bool stopOnError = true;
 int Global::driveFs = FS_FAT32;
 int Global::driveType = -1;
 
 void menu() {
     Logger::print("1  Dump disc to %s USB", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS");
     Logger::print("2  Dump disc to %s SD card", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS");
-    Logger::print("A  Toggle stop on error (currently: %s)", stopOnError ? "ON" : "OFF");
+    Logger::print("A  Toggle stop on read error (currently: %s)", Global::cancelOnError ? "ON" : "OFF");
     Logger::print("B  Change filesystem (currently: %s)", Global::driveFs == FS_FAT32 ? "FAT32" : "NTFS");
     Logger::print("+  Exit");
     Logger::print("-  Reprint menu");
@@ -57,8 +56,8 @@ int main(int argc, char **argv) {
         u32 buttons = Global::get_controller_buttons_pressed();
         
         if (buttons & WPAD_BUTTON_A) {
-            stopOnError = !stopOnError;
-            Global::setCancelOnError(stopOnError);
+            Global::cancelOnError = !Global::cancelOnError;
+            Global::setCancelOnError(Global::cancelOnError);
             menu();
             Logger::newline();
         } else if (buttons & WPAD_BUTTON_B) {

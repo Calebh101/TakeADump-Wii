@@ -9,6 +9,7 @@
 #include "processor.h"
 #include <cstring>
 #include <iomanip>
+#include <ogc/ipc.h>
 
 #define MICROSECOND 1 // From microsecond
 #define MILLISECOND 1000 // From microsecond
@@ -60,14 +61,14 @@ static union {
 	ioctlv iovector[0x08];
 } ATTRIBUTE_ALIGN(32);
 
-u32 read_cmd = DVD_NORMAL;
-volatile u32* dvd = (volatile u32*)0xCC006000;
-u32 dvd_hard_init = 0;
-int dumpCounter;
-char gameName[32];
-char internalName[512];
-int di_fd = -1;
-DiscID* globalDiskId = nullptr;
+extern u32 read_cmd;
+extern volatile u32* dvd;
+extern u32 dvd_hard_init;
+extern int dumpCounter;
+extern char gameName[32];
+extern char internalName[512];
+extern int di_fd;
+extern DiscID* globalDiskId;
 
 class DiskManager {
 public:
@@ -178,6 +179,8 @@ public:
             return IS_UNK_DISC;
         }
     }
+
+    static int dump(DiscID* diskId, u32 diskSize);
 
 private:
     static u32 dvd_get_error(void) {

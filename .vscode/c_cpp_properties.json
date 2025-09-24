@@ -6,7 +6,8 @@
                 "${workspaceFolder}/source/**",
                 "${workspaceFolder}/source/include/**",
                 "${workspaceFolder}/include/libogc/**",
-                "${workspaceFolder}/include/libogc"
+                "${workspaceFolder}/include/libogc",
+                "${workspaceFolder}/source/include"
             ],
             "defines": [
                 "GEKKO"
