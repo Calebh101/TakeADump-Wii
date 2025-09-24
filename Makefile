@@ -1,15 +1,11 @@
-ifndef DEVKITPRO
-$(error DEVKITPRO is not set. Please run in a devkitPro environment.)
-endif
-
-ifndef DEVKITPPC
-$(error DEVKITPPC is not set. Please run in a devkitPro environment.)
-endif
+# 'DEBUG=1': Build a debug binary
+# 'EXCEPTIONS=1': Build with exceptions included in the runtime (if C++)
 
 # Directories
 SRC     := source
 LIB     := lib
 INC     := include
+BIN   	:= bin
 BUILD   := build
 TARGET  := $(notdir $(CURDIR))
 LIBOGC 	:= libogc
@@ -18,7 +14,7 @@ LIBOGC 	:= libogc
 CC      := powerpc-eabi-gcc
 CXX     := powerpc-eabi-g++
 LD      := $(CXX)
-
+export PATH := $(DEVKITPRO)/tools/bin:$(DEVKITPPC)/bin:$(PATH)
 # Compiler flags
 MACHDEP := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
 CFLAGS  := -O2 -Wall -w $(MACHDEP) -I$(SRC) -I$(SRC)/include -I$(INC)/$(LIBOGC) -I$(INC)/$(LIBOGC)/ogc/machine
@@ -28,7 +24,6 @@ LDFLAGS := -O2 $(MACHDEP) -L$(LIB)/$(LIBOGC) -lwiiuse -lbte -logc -lfat -lm
 # Find sources
 CPPFILES := $(wildcard $(SRC)/*.cpp)
 OBJECTS  := $(patsubst $(SRC)/%.cpp,$(BUILD)/%.o,$(CPPFILES))
-PORTLIBS_PATH := $(DEVKITPRO)/portlibs
 
 ifeq ($(DEBUG),1)
     CXXFLAGS += -DDEBUG
@@ -40,7 +35,9 @@ ifeq ($(EXCEPTIONS),1)
     $(info Exceptions are enabled)
 endif
 
-export PATH := $(PORTLIBS_PATH)/wii/bin:$(PORTLIBS_PATH)/ppc/bin:$(DEVKITPRO)/tools/bin:$(DEVKITPPC)/bin:$(PATH)
+export DEVKITPRO := $(BIN)
+export PATH := $(DEVKITPRO)/tools/bin:$(PATH)
+#export PATH := $(BIN):$(BIN)/libexec:$(PATH)
 
 # Default target
 all: $(TARGET).dol

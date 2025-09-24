@@ -14,6 +14,6 @@ Also, the name is pretty good in my opinion, and I like the banner too.
 
 # Building
 
-I've included the libraries I used in `include` and `lib`, so just make sure DevkitPro with DevkitPPC is installed and set in your environmental variables, and run `make` in the root directory. You can also run `make` with `DEBUG=1` for a debug build.
+I've included all the necessary libraries and building tools, so just run `make` with optional parameters to compile the binary.
 
 `assemble.sh` just copies the previous build and the release assets to make `apps/TakeADump`.
