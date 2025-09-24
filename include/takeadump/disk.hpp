@@ -67,6 +67,7 @@ int dumpCounter;
 char gameName[32];
 char internalName[512];
 int di_fd = -1;
+DiscID* globalDiskId = nullptr;
 
 class DiskManager {
 public:
@@ -123,6 +124,7 @@ public:
         }
 
         DiscID* discId = read_dvd_id();
+        globalDiskId = discId;
         if (discId == nullptr) return -1;
         return 0;
     }
@@ -202,41 +204,31 @@ private:
     static int WDVD_LowReadDiskId() {
         int result;
 
-        // Ensure DI is open
         if (di_fd < 0) {
             di_fd = IOS_Open("/dev/di", 0);
             Logger::verbose("IOS_Open(\"/dev/di\") -> %d", di_fd);
             if (di_fd < 0) {
-                return -1; // can't open DI
+                return -1;
             }
         }
 
-        // outbuf in MEM1 (must be 32-byte aligned)
         void* outbuf = (void*)0x80000000;
-        memset(outbuf, 0, 0x20);        // clear before call (OK)
-        inbuffer[0] = 0x70000000;       // DI command for read disk id
-        inbuffer[1] = 0;                // zero the rest if you want
-        // ... you can zero more fields if you like
+        memset(outbuf, 0, 0x20);
+        inbuffer[0] = 0x70000000;
+        inbuffer[1] = 0;
 
         result = IOS_Ioctl(di_fd, 0x70, inbuffer, 0x20, outbuf, 0x20);
         Logger::verbose("IOS_Ioctl(di_fd,0x70) -> %d", result);
-
-        // IOS writes directly to physical memory — invalidate cache to see it
         DCInvalidateRange(outbuf, 0x20);
 
-        // Be conservative about success codes: treat >= 0 as success of the syscall,
-        // then validate the data (magic word) as final confirmation.
-        if (result < 0) {
-            return -result;
-        }
-
-        // Validate the magic word at the expected offset (0x18 for your DiscID)
+        if (result < 0) return -result;
         DiscID* d = (DiscID*)outbuf;
+
         if (d->magicWord == WII_MAGIC || d->magicWord == NGC_MAGIC) {
-            return 0; // success
+            return 0;
         } else {
             Logger::verbose("WDVD_LowReadDiskId: invalid magic 0x%08X", d->magicWord);
-            return -2; // bogus data read
+            return -2;
         }
     }
 
