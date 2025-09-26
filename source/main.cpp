@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
     Logger::verbose("Found disk size of %u bytes (%.2f MB)", size, size / 1024.0f / 1024.0f);
 
     Logger::print("Press A to start dumping.");
-    Logger::print("Press Reset to exit.");
+    Logger::print("Press Home or Reset to exit.");
     Global::waitForA();
     Global::waitForButtonRelease();
     int dumpRet = DiskManager::dump(disk, type, size);
